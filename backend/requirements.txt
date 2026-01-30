@@ -1,0 +1,7 @@
+Django>=5.0,<6.0
+djangorestframework
+psycopg2-binary
+djangorestframework-simplejwt
+django-cors-headers
+django-filter
+Pillow
