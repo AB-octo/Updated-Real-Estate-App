@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
     user: any;
+    setUser: (user: any) => void;
     login: (data: any) => Promise<void>;
     register: (data: any) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
+    setIsAuthenticated: (val: boolean) => void;
+    loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,29 +18,50 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<any>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) {
-            // Ideally verify token here, for now just assume valid
-            setIsAuthenticated(true);
-            // Decode token to get username if needed, or fetch profile
-            // For mini app, simple state is enough
-            // But we don't have user info in token (unless decoded).
-            // Let's assume user is logged in.
+            fetchProfile();
+        } else {
+            setLoading(false);
         }
     }, []);
 
+    const fetchProfile = async () => {
+        try {
+            const response = await api.get('/api/auth/profile/');
+            setUser(response.data);
+            setIsAuthenticated(true);
+        } catch (error: any) {
+            console.error("Failed to fetch profile", error);
+            // Only clear auth if we truly have no valid tokens
+            // The axios interceptor should have already tried to refresh
+            if (error.response?.status === 401) {
+                // Token is truly invalid/expired and refresh failed
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                setIsAuthenticated(false);
+                setUser(null);
+            }
+            // For other errors (network, etc), don't logout - might be temporary
+        }
+        setLoading(false);
+    };
+
     const login = async (credentials: any) => {
+        setLoading(true);
         try {
             const response = await api.post('/api/auth/login/', credentials);
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
-            setIsAuthenticated(true);
+            await fetchProfile();
             navigate('/');
         } catch (error) {
             console.error("Login failed", error);
+            setLoading(false);
             throw error;
         }
     };
@@ -58,11 +82,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('refresh_token');
         setIsAuthenticated(false);
         setUser(null);
-        navigate('/login');
+        setLoading(false);
+        // We removed the hardcoded navigate('/login') here
+        // The ProtectedRoute/StaffRoute will handle the redirect based on context
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated }}>
+        <AuthContext.Provider value={{ user, setUser, login, register, logout, isAuthenticated, setIsAuthenticated, loading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const { login } = useAuth();
     const [error, setError] = useState('');
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!captchaToken) {
+            setError('Please complete the reCAPTCHA.');
+            return;
+        }
         try {
-            await login({ username, password });
+            await login({ username, password, captcha_token: captchaToken });
         } catch (err) {
             setError('Invalid credentials');
         }
@@ -57,6 +64,13 @@ const Login: React.FC = () => {
                         </div>
 
                         <div>
+                            <ReCAPTCHA
+                                sitekey="6Ldk5VwsAAAAAPEjBGerTquDThJ9qMu8zOKVN01U"
+                                onChange={(token: string | null) => setCaptchaToken(token)}
+                            />
+                        </div>
+
+                        <div>
                             <button
                                 type="submit"
                                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -65,6 +79,15 @@ const Login: React.FC = () => {
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-gray-600">
+                            Don't have an account?{' '}
+                            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                Create one here
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

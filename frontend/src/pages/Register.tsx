@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -7,11 +9,16 @@ const Register: React.FC = () => {
     const [password, setPassword] = useState('');
     const { register } = useAuth();
     const [error, setError] = useState('');
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!captchaToken) {
+            setError('Please complete the reCAPTCHA.');
+            return;
+        }
         try {
-            await register({ username, email, password });
+            await register({ username, email, password, captcha_token: captchaToken });
         } catch (err) {
             setError('Registration failed. Try a different username/email.');
         }
@@ -72,6 +79,13 @@ const Register: React.FC = () => {
                         </div>
 
                         <div>
+                            <ReCAPTCHA
+                                sitekey="6Ldk5VwsAAAAAPEjBGerTquDThJ9qMu8zOKVN01U"
+                                onChange={(token: string | null) => setCaptchaToken(token)}
+                            />
+                        </div>
+
+                        <div>
                             <button
                                 type="submit"
                                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -80,6 +94,15 @@ const Register: React.FC = () => {
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-gray-600">
+                            Already have an account?{' '}
+                            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                Log in instead
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

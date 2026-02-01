@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# CLIP Models (will be downloaded at runtime)
+clip_models/
+*.pt
+*.pth
+
+# Logs
+*.log
+
+# Local environment files
+.env
+.env.local
+*.local
