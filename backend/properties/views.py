@@ -16,9 +16,18 @@ class ProfileView(views.APIView):
         })
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of an object to edit/delete it.
+    Staff members can also edit/delete any object.
+    """
     def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
             return True
+        # Staff can do anything
+        if request.user.is_staff:
+            return True
+        # Write permissions are only allowed to the owner
         return obj.owner == request.user
 
 class PropertyViewSet(viewsets.ModelViewSet):
@@ -31,18 +40,26 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         
-        # 1. Detail actions (approve/reject/update) or Admin moderation view
+        # 1. Detail actions (approve/reject/update/delete) - allow staff and owners
+        if self.detail:
+            # Staff can access anything
+            if user.is_staff:
+                return Property.objects.all()
+            # Owners can access their own properties
+            if user.is_authenticated:
+                return Property.objects.filter(owner=user) | Property.objects.filter(is_approved=True)
+        
+        # 2. Admin moderation view
         is_admin_view = self.request.query_params.get('admin', 'false').lower() == 'true'
-        # For staff, if it's a detail action (pk is present) or the admin view is requested, show all
-        if user.is_staff and (self.detail or is_admin_view):
+        if is_admin_view and user.is_staff:
             return Property.objects.all()
             
-        # 2. 'My Listings' view: show all properties owned by the user
+        # 3. 'My Listings' view: show all properties owned by the user
         mine = self.request.query_params.get('mine', 'false').lower() == 'true'
         if mine and user.is_authenticated:
             return Property.objects.filter(owner=user)
 
-        # 3. Public 'Properties' section: show ONLY approved properties
+        # 4. Public 'Properties' section: show ONLY approved properties
         return Property.objects.filter(is_approved=True)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
