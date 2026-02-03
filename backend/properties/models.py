@@ -11,6 +11,7 @@ class Property(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     image = models.ImageField(upload_to='property_images/', blank=True, null=True) # Primary image
     is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

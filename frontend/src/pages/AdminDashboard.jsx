@@ -30,7 +30,7 @@ const AdminDashboard = () => {
     const handleApprove = async (id) => {
         try {
             await api.post(`/api/properties/${id}/approve/`);
-            setProperties(properties.map(p => p.id === id ? { ...p, is_approved: true } : p));
+            setProperties(properties.map(p => p.id === id ? { ...p, is_approved: true, is_rejected: false } : p));
         } catch (error) {
             alert("Failed to approve property");
         }
@@ -39,7 +39,7 @@ const AdminDashboard = () => {
     const handleReject = async (id) => {
         try {
             await api.post(`/api/properties/${id}/reject/`);
-            setProperties(properties.map(p => p.id === id ? { ...p, is_approved: false } : p));
+            setProperties(properties.map(p => p.id === id ? { ...p, is_approved: false, is_rejected: true } : p));
         } catch (error) {
             alert("Failed to reject property");
         }
@@ -115,9 +115,11 @@ const AdminDashboard = () => {
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${p.is_approved
                                             ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                            : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                                            : p.is_rejected
+                                                ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                                : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
                                             }`}>
-                                            {p.is_approved ? 'Approved' : 'Pending Review'}
+                                            {p.is_approved ? 'Approved' : p.is_rejected ? 'Rejected' : 'Pending Review'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-3">
@@ -128,12 +130,22 @@ const AdminDashboard = () => {
                                             View Details
                                         </button>
                                         {!p.is_approved ? (
-                                            <button
-                                                onClick={() => handleApprove(p.id)}
-                                                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-600/20"
-                                            >
-                                                Approve
-                                            </button>
+                                            <div className="inline-flex gap-2">
+                                                <button
+                                                    onClick={() => handleApprove(p.id)}
+                                                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-600/20"
+                                                >
+                                                    Approve
+                                                </button>
+                                                {!p.is_rejected && (
+                                                    <button
+                                                        onClick={() => handleReject(p.id)}
+                                                        className="text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-red-500/20"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                )}
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleReject(p.id)}

@@ -66,6 +66,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         property_obj = self.get_object()
         property_obj.is_approved = True
+        property_obj.is_rejected = False
         property_obj.save()
         return response.Response({'status': 'property approved'})
 
@@ -73,6 +74,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def reject(self, request, pk=None):
         property_obj = self.get_object()
         property_obj.is_approved = False
+        property_obj.is_rejected = True
         property_obj.save()
         return response.Response({'status': 'property rejected'})
 
@@ -89,9 +91,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
         # Use the first image as the primary image if available
         primary_image = images[0] if images else None
         
-        # New properties start as pending (is_approved=False)
+        # New properties start as pending (is_approved=False, is_rejected=False)
         # They will only show in public list after admin approval
-        property_obj = serializer.save(owner=self.request.user, image=primary_image, is_approved=False)
+        property_obj = serializer.save(owner=self.request.user, image=primary_image, is_approved=False, is_rejected=False)
         
         # Save all images to the PropertyImage model
         for image in images:

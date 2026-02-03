@@ -78,9 +78,11 @@ const PropertyDetailsModal = ({ isOpen, onClose, property, onApprove, onReject }
                                     <div className="flex items-center justify-between">
                                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${property.is_approved
                                             ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                            : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'
+                                            : property.is_rejected
+                                                ? 'bg-red-50 text-red-700 ring-red-600/20'
+                                                : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'
                                             }`}>
-                                            {property.is_approved ? 'Approved' : 'Pending Review'}
+                                            {property.is_approved ? 'Approved' : property.is_rejected ? 'Rejected' : 'Pending Review'}
                                         </span>
                                         <span className="text-sm text-gray-500">
                                             ID: #{property.id}

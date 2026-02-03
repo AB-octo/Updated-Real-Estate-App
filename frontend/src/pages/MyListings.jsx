@@ -99,9 +99,11 @@ const MyListings = () => {
                                     <div className="absolute top-4 right-4 flex gap-2">
                                         <div className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm backdrop-blur-sm ${property.is_approved
                                             ? 'bg-green-100/90 text-green-700'
-                                            : 'bg-yellow-100/90 text-yellow-700'
+                                            : property.is_rejected
+                                                ? 'bg-red-100/90 text-red-700'
+                                                : 'bg-yellow-100/90 text-yellow-700'
                                             }`}>
-                                            {property.is_approved ? '✓ Approved' : '⌛ Pending'}
+                                            {property.is_approved ? '✓ Approved' : property.is_rejected ? '✕ Rejected' : '⌛ Pending'}
                                         </div>
                                         <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-indigo-600 shadow-sm">
                                             ${Number(property.price).toLocaleString()}
