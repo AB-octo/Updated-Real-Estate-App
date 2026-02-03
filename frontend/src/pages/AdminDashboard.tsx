@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 const AdminDashboard: React.FC = () => {
     const [properties, setProperties] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const filter = (searchParams.get('tab') || 'all') as 'all' | 'pending' | 'approved';
 
     const fetchProperties = async () => {
