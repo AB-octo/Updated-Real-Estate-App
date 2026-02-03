@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AdminLayout from '../components/AdminLayout';
 import { useSearchParams } from 'react-router-dom';
+import PropertyDetailsModal from '../components/PropertyDetailsModal';
 
 const AdminDashboard: React.FC = () => {
     const [properties, setProperties] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
     const [searchParams] = useSearchParams();
     const filter = (searchParams.get('tab') || 'all') as 'all' | 'pending' | 'approved';
 
@@ -119,6 +121,12 @@ const AdminDashboard: React.FC = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-3">
+                                        <button
+                                            onClick={() => setSelectedProperty(p)}
+                                            className="text-indigo-400 hover:text-indigo-300 font-medium text-xs transition-colors mr-2"
+                                        >
+                                            View Details
+                                        </button>
                                         {!p.is_approved ? (
                                             <button
                                                 onClick={() => handleApprove(p.id)}
@@ -141,6 +149,14 @@ const AdminDashboard: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            <PropertyDetailsModal
+                isOpen={!!selectedProperty}
+                onClose={() => setSelectedProperty(null)}
+                property={selectedProperty}
+                onApprove={handleApprove}
+                onReject={handleReject}
+            />
         </AdminLayout>
     );
 };
