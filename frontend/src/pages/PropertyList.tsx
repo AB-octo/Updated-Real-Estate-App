@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import type { Property } from '../types/property';
+import PropertyDetailsModal from '../components/PropertyDetailsModal';
 
 const PropertyList: React.FC = () => {
     const [properties, setProperties] = useState<Property[]>([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
     const fetchProperties = async (query = '') => {
         setLoading(true);
@@ -26,6 +28,10 @@ const PropertyList: React.FC = () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         fetchProperties(search);
+    };
+
+    const handleViewDetails = (property: Property) => {
+        setSelectedProperty(property);
     };
 
     return (
@@ -96,7 +102,12 @@ const PropertyList: React.FC = () => {
 
                                     <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                                         <span className="text-sm font-medium text-gray-500">Listed by <span className="text-gray-900">{property.owner}</span></span>
-                                        <button className="text-indigo-600 font-semibold text-sm hover:text-indigo-800">View Details →</button>
+                                        <button
+                                            onClick={() => handleViewDetails(property)}
+                                            className="text-indigo-600 font-semibold text-sm hover:text-indigo-800"
+                                        >
+                                            View Details →
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -104,6 +115,12 @@ const PropertyList: React.FC = () => {
                     )}
                 </div>
             )}
+
+            <PropertyDetailsModal
+                isOpen={!!selectedProperty}
+                onClose={() => setSelectedProperty(null)}
+                property={selectedProperty}
+            />
         </div>
     );
 };

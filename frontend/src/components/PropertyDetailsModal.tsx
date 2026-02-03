@@ -5,8 +5,8 @@ interface PropertyDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     property: any; // Using any for now to match dashboard state, ideally use Property type
-    onApprove: (id: number) => void;
-    onReject: (id: number) => void;
+    onApprove?: (id: number) => void;
+    onReject?: (id: number) => void;
 }
 
 const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onClose, property, onApprove, onReject }) => {
@@ -19,7 +19,7 @@ const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onC
     ];
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[1000] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             {/* Backdrop */}
             <div className="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
@@ -153,7 +153,7 @@ const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onC
                                         Close
                                     </button>
 
-                                    {!property.is_approved ? (
+                                    {onApprove && onReject && !property.is_approved && (
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -164,7 +164,9 @@ const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onC
                                         >
                                             Approve Listing
                                         </button>
-                                    ) : (
+                                    )}
+
+                                    {onApprove && onReject && property.is_approved && (
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm font-bold text-red-600 shadow-sm hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
