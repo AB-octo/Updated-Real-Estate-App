@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ReCAPTCHA from "react-google-recaptcha";
 
-const Register: React.FC = () => {
+const Register = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { register } = useAuth();
     const [error, setError] = useState('');
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [captchaToken, setCaptchaToken] = useState(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!captchaToken) {
             setError('Please complete the reCAPTCHA.');
@@ -81,7 +81,7 @@ const Register: React.FC = () => {
                         <div>
                             <ReCAPTCHA
                                 sitekey="6Ldk5VwsAAAAAPEjBGerTquDThJ9qMu8zOKVN01U"
-                                onChange={(token: string | null) => setCaptchaToken(token)}
+                                onChange={(token) => setCaptchaToken(token)}
                             />
                         </div>
 

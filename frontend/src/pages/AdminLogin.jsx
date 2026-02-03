@@ -4,16 +4,16 @@ import { useAuth } from '../context/AuthContext';
 import ReCAPTCHA from "react-google-recaptcha";
 import api from '../api';
 
-const AdminLogin: React.FC = () => {
+const AdminLogin = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const { setUser, setIsAuthenticated } = useAuth();
     const [error, setError] = useState('');
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [captchaToken, setCaptchaToken] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
@@ -53,7 +53,7 @@ const AdminLogin: React.FC = () => {
             setIsAuthenticated(true);
             navigate('/admin-dash');
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Login error", err);
             setError('Invalid credentials or server error.');
         } finally {
@@ -114,7 +114,7 @@ const AdminLogin: React.FC = () => {
                             <ReCAPTCHA
                                 theme="dark"
                                 sitekey="6Ldk5VwsAAAAAPEjBGerTquDThJ9qMu8zOKVN01U"
-                                onChange={(token: string | null) => setCaptchaToken(token)}
+                                onChange={(token) => setCaptchaToken(token)}
                             />
                         </div>
 

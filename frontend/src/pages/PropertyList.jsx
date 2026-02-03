@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import type { Property } from '../types/property';
 import PropertyDetailsModal from '../components/PropertyDetailsModal';
 
-const PropertyList: React.FC = () => {
-    const [properties, setProperties] = useState<Property[]>([]);
+const PropertyList = () => {
+    const [properties, setProperties] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+    const [selectedProperty, setSelectedProperty] = useState(null);
 
     const fetchProperties = async (query = '') => {
         setLoading(true);
@@ -25,12 +24,12 @@ const PropertyList: React.FC = () => {
         fetchProperties();
     }, []);
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = (e) => {
         e.preventDefault();
         fetchProperties(search);
     };
 
-    const handleViewDetails = (property: Property) => {
+    const handleViewDetails = (property) => {
         setSelectedProperty(property);
     };
 

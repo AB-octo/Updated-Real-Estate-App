@@ -2,21 +2,10 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 
-interface AuthContextType {
-    user: any;
-    setUser: (user: any) => void;
-    login: (data: any) => Promise<void>;
-    register: (data: any) => Promise<void>;
-    logout: () => void;
-    isAuthenticated: boolean;
-    setIsAuthenticated: (val: boolean) => void;
-    loading: boolean;
-}
+const AuthContext = createContext(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<any>(null);
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -35,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const response = await api.get('/api/auth/profile/');
             setUser(response.data);
             setIsAuthenticated(true);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Failed to fetch profile", error);
             // Only clear auth if we truly have no valid tokens
             // The axios interceptor should have already tried to refresh
@@ -51,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
     };
 
-    const login = async (credentials: any) => {
+    const login = async (credentials) => {
         setLoading(true);
         try {
             const response = await api.post('/api/auth/login/', credentials);
@@ -66,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const register = async (userData: any) => {
+    const register = async (userData) => {
         try {
             await api.post('/api/auth/register/', userData);
             // Auto login or redirect to login

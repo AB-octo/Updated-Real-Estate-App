@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import type { Property } from '../types/property';
 
-const MyListings: React.FC = () => {
-    const [properties, setProperties] = useState<Property[]>([]);
+const MyListings = () => {
+    const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-    const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [editingProperty, setEditingProperty] = useState(null);
     const [editForm, setEditForm] = useState({ title: '', description: '', price: '', location: '' });
     const [saving, setSaving] = useState(false);
 
@@ -26,7 +25,7 @@ const MyListings: React.FC = () => {
         fetchMyProperties();
     }, []);
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id) => {
         try {
             await api.delete(`/api/properties/${id}/`);
             setProperties(properties.filter(p => p.id !== id));
@@ -37,7 +36,7 @@ const MyListings: React.FC = () => {
         }
     };
 
-    const openEditModal = (property: Property) => {
+    const openEditModal = (property) => {
         setEditingProperty(property);
         setEditForm({
             title: property.title,
@@ -83,7 +82,7 @@ const MyListings: React.FC = () => {
                             <p className="text-gray-500 text-lg">You haven't listed any properties yet.</p>
                         </div>
                     ) : (
-                        properties.map((property: any) => (
+                        properties.map((property) => (
                             <div key={property.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
                                 <div className="relative h-64 overflow-hidden bg-gray-200">
                                     {property.image ? (

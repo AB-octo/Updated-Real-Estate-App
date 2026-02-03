@@ -19,7 +19,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const LocationMarker = ({ position, setPosition }: { position: { lat: number, lng: number } | null, setPosition: (lat: number, lng: number) => void }) => {
+const LocationMarker = ({ position, setPosition }) => {
     useMapEvents({
         click(e) {
             // Round to 6 decimal places to satisfy backend max_digits constraint
@@ -32,29 +32,29 @@ const LocationMarker = ({ position, setPosition }: { position: { lat: number, ln
     return position ? <Marker position={position} /> : null;
 };
 
-const AddProperty: React.FC = () => {
+const AddProperty = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         price: '',
         location: '',
-        latitude: null as number | null,
-        longitude: null as number | null,
+        latitude: null,
+        longitude: null,
     });
 
-    const [images, setImages] = useState<File[]>([]);
+    const [images, setImages] = useState([]);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isGeocoding, setIsGeocoding] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
     };
 
-    const handleLocationSelect = async (lat: number, lng: number) => {
+    const handleLocationSelect = async (lat, lng) => {
         setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
 
         // Fetch address from Nominatim
@@ -69,10 +69,7 @@ const AddProperty: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.display_name) {
-                    // Extract a shorter address if possible, or use display_name
-                    // Nominatim display_name can be very long
                     let address = data.display_name;
-                    // Try to simplify: Road, City, State
                     if (data.address) {
                         const parts = [];
                         if (data.address.road) parts.push(data.address.road);
@@ -91,13 +88,13 @@ const AddProperty: React.FC = () => {
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (e) => {
         if (e.target.files) {
             setImages(Array.from(e.target.files));
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (images.length === 0) {
@@ -141,7 +138,7 @@ const AddProperty: React.FC = () => {
             });
             alert('Property added successfully! Waiting for admin approval.');
             navigate('/');
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error adding property", error);
             if (error.response) {
                 alert(`Error: ${error.response.data.message || JSON.stringify(error.response.data)}`);

@@ -1,12 +1,6 @@
 import React from 'react';
 
-interface ProcessingModalProps {
-    isOpen: boolean;
-    title?: string;
-    message?: string;
-}
-
-const ProcessingModal: React.FC<ProcessingModalProps> = ({
+const ProcessingModal = ({
     isOpen,
     title = "Processing...",
     message = "Please wait while we verify and upload your property."

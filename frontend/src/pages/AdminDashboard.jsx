@@ -4,12 +4,12 @@ import AdminLayout from '../components/AdminLayout';
 import { useSearchParams } from 'react-router-dom';
 import PropertyDetailsModal from '../components/PropertyDetailsModal';
 
-const AdminDashboard: React.FC = () => {
-    const [properties, setProperties] = useState<any[]>([]);
+const AdminDashboard = () => {
+    const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
+    const [selectedProperty, setSelectedProperty] = useState(null);
     const [searchParams] = useSearchParams();
-    const filter = (searchParams.get('tab') || 'all') as 'all' | 'pending' | 'approved';
+    const tab = searchParams.get('tab') || 'all';
 
     const fetchProperties = async () => {
         setLoading(true);
@@ -27,7 +27,7 @@ const AdminDashboard: React.FC = () => {
         fetchProperties();
     }, []);
 
-    const handleApprove = async (id: number) => {
+    const handleApprove = async (id) => {
         try {
             await api.post(`/api/properties/${id}/approve/`);
             setProperties(properties.map(p => p.id === id ? { ...p, is_approved: true } : p));
@@ -36,7 +36,7 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    const handleReject = async (id: number) => {
+    const handleReject = async (id) => {
         try {
             await api.post(`/api/properties/${id}/reject/`);
             setProperties(properties.map(p => p.id === id ? { ...p, is_approved: false } : p));
@@ -46,8 +46,8 @@ const AdminDashboard: React.FC = () => {
     };
 
     const filteredProperties = properties.filter(p => {
-        if (filter === 'pending') return !p.is_approved;
-        if (filter === 'approved') return p.is_approved;
+        if (tab === 'pending') return !p.is_approved;
+        if (tab === 'approved') return p.is_approved;
         return true;
     });
 

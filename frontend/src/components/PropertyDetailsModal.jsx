@@ -1,15 +1,6 @@
 import React from 'react';
 
-
-interface PropertyDetailsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    property: any; // Using any for now to match dashboard state, ideally use Property type
-    onApprove?: (id: number) => void;
-    onReject?: (id: number) => void;
-}
-
-const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onClose, property, onApprove, onReject }) => {
+const PropertyDetailsModal = ({ isOpen, onClose, property, onApprove, onReject }) => {
     if (!isOpen || !property) return null;
 
     // Combine main image and gallery images into one list
@@ -58,7 +49,7 @@ const PropertyDetailsModal: React.FC<PropertyDetailsModalProps> = ({ isOpen, onC
                                         {/* Grid of other images */}
                                         {allImages.length > 1 && (
                                             <div className="grid grid-cols-3 gap-2">
-                                                {allImages.slice(1).map((img: any, idx: number) => (
+                                                {allImages.slice(1).map((img, idx) => (
                                                     <div key={idx} className="aspect-w-1 aspect-h-1 overflow-hidden rounded-lg shadow-sm ring-1 ring-gray-200">
                                                         <img
                                                             src={img.image}
