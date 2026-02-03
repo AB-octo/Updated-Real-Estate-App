@@ -14,7 +14,7 @@ const ProcessingModal: React.FC<ProcessingModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-4">
                 <div className="flex justify-center">
                     <div className="relative">

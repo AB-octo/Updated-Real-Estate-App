@@ -2,7 +2,35 @@ import React, { useState } from 'react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import ProcessingModal from '../components/ProcessingModal';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon in Leaflet with React
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const LocationMarker = ({ position, setPosition }: { position: { lat: number, lng: number } | null, setPosition: (lat: number, lng: number) => void }) => {
+    useMapEvents({
+        click(e) {
+            // Round to 6 decimal places to satisfy backend max_digits constraint
+            const lat = Number(e.latlng.lat.toFixed(6));
+            const lng = Number(e.latlng.lng.toFixed(6));
+            setPosition(lat, lng);
+        },
+    });
+
+    return position ? <Marker position={position} /> : null;
+};
 
 const AddProperty: React.FC = () => {
     const navigate = useNavigate();
@@ -15,20 +43,52 @@ const AddProperty: React.FC = () => {
         longitude: null as number | null,
     });
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY" // Placeholder
-    });
-
     const [images, setImages] = useState<File[]>([]);
-
     const [isVerifying, setIsVerifying] = useState(false);
+    const [isGeocoding, setIsGeocoding] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
+    };
+
+    const handleLocationSelect = async (lat: number, lng: number) => {
+        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+
+        // Fetch address from Nominatim
+        setIsGeocoding(true);
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+                headers: {
+                    'User-Agent': 'EstatelyApp/1.0'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.display_name) {
+                    // Extract a shorter address if possible, or use display_name
+                    // Nominatim display_name can be very long
+                    let address = data.display_name;
+                    // Try to simplify: Road, City, State
+                    if (data.address) {
+                        const parts = [];
+                        if (data.address.road) parts.push(data.address.road);
+                        if (data.address.city || data.address.town || data.address.village) parts.push(data.address.city || data.address.town || data.address.village);
+                        if (data.address.state) parts.push(data.address.state);
+                        if (parts.length > 0) address = parts.join(', ');
+                    }
+
+                    setFormData(prev => ({ ...prev, location: address }));
+                }
+            }
+        } catch (error) {
+            console.error("Geocoding failed", error);
+        } finally {
+            setIsGeocoding(false);
+        }
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +153,8 @@ const AddProperty: React.FC = () => {
         }
     };
 
+    const defaultCenter = { lat: 40.7128, lng: -74.0060 }; // New York
+
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto">
@@ -146,7 +208,9 @@ const AddProperty: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700">Location</label>
+                                <label className="block text-sm font-semibold text-gray-700">
+                                    Location {isGeocoding && <span className="text-xs text-indigo-500 font-normal ml-2 animate-pulse">(Auto-filling...)</span>}
+                                </label>
                                 <input
                                     type="text"
                                     name="location"
@@ -160,31 +224,21 @@ const AddProperty: React.FC = () => {
 
                             <div className="col-span-2">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Pin Location on Map</label>
-                                <div className="h-64 rounded-xl overflow-hidden border border-gray-200">
-                                    {isLoaded ? (
-                                        <GoogleMap
-                                            mapContainerStyle={{ width: '100%', height: '100%' }}
-                                            center={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : { lat: 40.7128, lng: -74.0060 }}
-                                            zoom={10}
-                                            onClick={(e: any) => {
-                                                if (e.latLng) {
-                                                    setFormData({
-                                                        ...formData,
-                                                        latitude: e.latLng.lat(),
-                                                        longitude: e.latLng.lng()
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            {formData.latitude && formData.longitude && (
-                                                <Marker position={{ lat: formData.latitude, lng: formData.longitude }} />
-                                            )}
-                                        </GoogleMap>
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
-                                            Loading Map...
-                                        </div>
-                                    )}
+                                <div className="h-64 rounded-xl overflow-hidden border border-gray-200 z-0">
+                                    <MapContainer
+                                        center={[defaultCenter.lat, defaultCenter.lng]}
+                                        zoom={13}
+                                        style={{ height: '100%', width: '100%' }}
+                                    >
+                                        <TileLayer
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        />
+                                        <LocationMarker
+                                            position={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null}
+                                            setPosition={handleLocationSelect}
+                                        />
+                                    </MapContainer>
                                 </div>
                                 {formData.latitude && (
                                     <p className="mt-2 text-xs text-indigo-600 font-medium">
